@@ -1,0 +1,14 @@
+// Vendors
+@import '~www/vendors/materialize/css/materialize.min.css';
+
+@import 'base/general';
+@import 'base/colors';
+
+@import '~app/modules/header/header';
+@import '~app/modules/footer/footer';
+@import '~app/modules/home/home';
+@import '~app/modules/consultas/consultas';
+@import '~app/modules/day_chart/day-chart';
+@import '~app/modules/month_chart/month-chart';
+
+//@import '~materialize/bin/materialize';

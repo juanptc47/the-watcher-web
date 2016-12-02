@@ -1,0 +1,13 @@
+{
+  "presets": [
+    "es2015"
+  ],
+  "plugins": [
+    "transform-class-properties",
+    [
+      "module-resolver", {
+        "root": ["./src"]
+      }
+    ]
+  ]
+}

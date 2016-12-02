@@ -1,0 +1,189 @@
+<div class="consultas-content">
+
+  <h1 class="title">Consultas</h1>
+
+  <div class="card">
+    <h5><i class="material-icons">network_check</i> Variables Medidas</h5>
+    <div class="card-content">
+      <div class="container">
+        <div id="variablesCarousel" class="carousel">
+
+          <% collection.each(function(model){ %>
+            <a class="carousel-item" id="<%= model.get('_id')%>" data-name="<%= model.get('nombre')%>" data-zone="<%= model.get('lugar')%>" data-unit="<%= model.get('unidad')%>">
+              <div class="carousel-my-card">
+                <div class="background-image" style="background-image: url('assets/img/ibero_<%= model.get('lugar')%>.jpg');"></div>
+                <div class="screen"></div>
+                <div class="var-logo">
+                  <img src="/assets/img/<%= model.get('nombre')%>.png"/>
+                </div>
+                <h1>-<%= model.get('nombre')%>-<br><%= model.get('lugar')%></h1>
+              </div>
+            </a>
+          <% }); %>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="card">
+    <h5><i class="material-icons">filter_list</i> Filtros de Búsqueda</h5>
+    <div class="card-content">
+      <div class="row">
+        <div class="col s12">
+          <ul class="tabs">
+            <li class="tab col s4"><a class="active" href="#searchType1">En Fecha Especifica</a></li>
+            <li class="tab col s4"><a href="#searchType2">Por Rango de Fechas</a></li>
+            <li class="tab col s4"><a href="#searchType3">Periodica</a></li>
+          </ul>
+        </div>
+        <div id="searchType1" class="my-tab-content col s12">
+          <br>
+          <p class="description">
+            Define una fecha especifica para visualizar información de la variable seleccionada.<br>
+            Puedes elegir buscar por año, mes o día:<br>
+            &emsp; • Un día te mostrara los datos tomados por hora.<br>
+            &emsp; • Un mes te mostrara el promedio de los datos por día.<br>
+            &emsp; • Un año te mostrara el promedio de los datos por mes.<br>
+            &emsp; • Si pides los datos de hoy, recibiras toda información recaudada en el día.<br>
+          </p>
+          <div class="row">
+            <div class="col s6 m3">
+              <p>
+                <input type="checkbox" class="filled-in checkbox-red" id="yearCheckBox" checked="checked" />
+                <label for="yearCheckBox">Año</label>
+              </p>
+            </div>
+            <div class="col s6 m3">
+              <p>
+                <input type="checkbox" class="filled-in checkbox-red" id="monthCheckBox" checked="checked" />
+                <label for="monthCheckBox">Mes</label>
+              </p>
+            </div>
+            <div class="col s6 m3">
+              <p>
+                <input type="checkbox" class="filled-in checkbox-red" id="dayCheckBox" checked="checked" />
+                <label for="dayCheckBox">Día</label>
+              </p>
+            </div>
+            <div class="col s6 m3">
+              <p>
+                <input type="checkbox" class="filled-in checkbox-red" id="todayCheckBox" />
+                <label for="todayCheckBox">Hoy</label>
+              </p>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="input-field col s12 m4">
+              <select id="yearSelectInput">
+                <option value="" disabled>Elige un Año</option>
+                <option value="2016" Selected>2016</option>
+              </select>
+              <label>Año</label>
+            </div>
+            <div class="input-field col s12 m4">
+              <select id="monthSelectInput">
+                <option value="" disabled selected>Elige un Mes</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+              <label>Mes</label>
+            </div>
+            <div class="input-field col s12 m4">
+              <select id="daySelectInput">
+                <option value="" disabled selected>Elige un Día</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+                <option value="21">21</option>
+                <option value="22">22</option>
+                <option value="23">23</option>
+                <option value="24">14</option>
+                <option value="25">25</option>
+                <option value="26">26</option>
+                <option value="27">27</option>
+                <option value="28">28</option>
+                <option value="29">29</option>
+                <option value="30">30</option>
+                <option value="31">31</option>
+              </select>
+              <label>Día</label>
+            </div>
+          </div>
+        </div>
+        <div id="searchType2" class="my-tab-content col s12">Test 2</div>
+        <div id="searchType3" class="my-tab-content col s12">Test 3</div>
+      </div>
+
+
+    </div>
+  </div>
+
+  <div class="search-btn-holder">
+    <a id="searchNowBtn" class="search-btn waves-effect waves-light btn-large red darken-1">Buscar</a>
+  </div>
+
+  <div class="results-divider"></div>
+
+  <div id="loadingIndicator" style="text-align: center" hidden>
+    <div class="preloader-wrapper big active">
+      <div class="spinner-layer spinner-red-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="serach-results" style="min-height: 400px" hidden>
+    <div class="row">
+      <div class="col s12">
+          <div id="chart1-container" class="chart-container"></div>
+      </div>
+      <div class="col s12">
+          <div id="chart2-container" class="chart-container"></div>
+      </div>
+      <div class="col s12">
+          <div id="chart3-container" class="chart-container"></div>
+      </div>
+      <div class="col s12">
+          <div id="chart4-container" class="chart-container"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
