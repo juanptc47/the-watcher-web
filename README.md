@@ -1,4 +1,4 @@
-# AmpersandJS + Webpack + Babel + Sass Quickstart
+# The Watcher WebPortal for public use. Built on: AmpersandJS + Webpack + Babel + Sass
 
 ## Instructions
 0. Clone the repository and make sure you have node and npm installed and updated
