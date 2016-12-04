@@ -104,6 +104,48 @@ const DayChartModel = Model.extend({
     this.set('isReady',true);
 
     //console.log(this.toJSON());
+  },
+  setMultiData(dataArray){
+
+    var datasetsArray = [];
+
+    dataArray.forEach( (object) => {
+      let dataset = {
+        label: object.title,
+        fill: false,
+        lineTension: 0.1,
+        backgroundColor: object.color,
+        borderColor: object.color,
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: object.color,
+        pointBackgroundColor: object.color,
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: object.color,
+        pointHoverBorderColor: object.color,
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        data: object.data,
+        spanGaps: false,
+      };
+      datasetsArray.push(dataset);
+    });
+
+    var data = {
+      labels: [
+        "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00",
+        "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
+        "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
+        "21:00", "22:00", "23:00"],
+      datasets: datasetsArray
+    };
+
+    this.set('chartData',data);
+    this.set('isReady',true);
   }
 });
 

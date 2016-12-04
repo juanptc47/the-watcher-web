@@ -1,0 +1,28 @@
+.chart-card{
+  position: relative;
+  .card-content{
+    //padding: 20px 35px 0 35px !important;
+    padding: 0 !important;
+    margin: 20px 35px 0 35px !important;
+  }
+  .x-label{
+    text-align: center;
+    width: 100%;
+    h6{
+      padding: 0 10px 20px 10px !important;
+    }
+  }
+  .y-label{
+    left: 0;
+    top: 50%;
+    margin-left: 15px;
+    position: absolute;
+    transform: rotate(-90deg) translateY(-50%);
+    height: 0;
+    width: 0;
+    h6{
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+  }
+}

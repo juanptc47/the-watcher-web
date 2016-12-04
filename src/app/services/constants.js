@@ -1,5 +1,5 @@
 const Constants = {
-  domain: 'http://localhost:3001'
+  domain: 'http://172.16.90.168:3000'
 };
 
 export default Constants;

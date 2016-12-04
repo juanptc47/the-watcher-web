@@ -7,13 +7,13 @@ import Chart from 'chart.js';
 import Constants from 'app/services/constants';
 
 import extendRender from 'app/utils/extendRender';
-import template from './month-chart.html';
+import template from './year-chart.html';
 
-const MonthChartView = View.extend({
+const YearChartView = View.extend({
   template: template,
   initialize() {
     extendRender(this);
-    this.model = new MonthChartModel();
+    this.model = new YearChartModel();
   },
   viewWillRender() {
   },
@@ -32,7 +32,7 @@ const MonthChartView = View.extend({
         }
       });
     } else {
-      console.log('MonthChartModel not ready');
+      console.log('YearChartModel not ready');
     }
 
   },
@@ -41,12 +41,11 @@ const MonthChartView = View.extend({
 });
 
 // Model properties must be defined beforehand, not like in Backbone that can be defined on the fly.
-const MonthChartModel = Model.extend({
-  url: Constants.domain+'/statistics/month/',
+const YearChartModel = Model.extend({
+  url: Constants.domain+'/statistics/year/',
   props: {
     id: 'string',
     statisticsType: 'string',
-    numOfDays: 'number',
     chartTitle: 'string',
     yLabel: 'string',
     lineColorPrimary: 'string',
@@ -60,21 +59,15 @@ const MonthChartModel = Model.extend({
     let valuesArray = [];
 
     response.forEach( (object) => {
-      let day = new Date(object.timestamp).getDate();
-      valuesArray[day-1] = object[this.get('statisticsType')];
+      let month = new Date(object.timestamp).getMonth();
+      valuesArray[month] = object[this.get('statisticsType')];
     });
-
-    const numOfDays = this.get('numOfDays');
-    let dayLabels = new Array(numOfDays);
-    for(let i=0; i<numOfDays; i++){
-      dayLabels[i] = (i+1).toString();
-    }
 
     this.set('data',valuesArray);
 
     let _this = this;
     var data = {
-      labels: dayLabels,
+      labels: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
       datasets: [
         {
           label: _this.get('chartTitle'),
@@ -105,14 +98,10 @@ const MonthChartModel = Model.extend({
 
     this.set('chartData',data);
     this.set('isReady',true);
+
+    //console.log(this.toJSON());
   },
   setMultiData(dataArray){
-
-    const numOfDays = this.get('numOfDays');
-    let dayLabels = new Array(numOfDays);
-    for(let i=0; i<numOfDays; i++){
-      dayLabels[i] = (i+1).toString();
-    }
 
     var datasetsArray = [];
 
@@ -143,14 +132,13 @@ const MonthChartModel = Model.extend({
     });
 
     var data = {
-      labels: dayLabels,
+      labels: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
       datasets: datasetsArray
     };
 
     this.set('chartData',data);
     this.set('isReady',true);
   }
-
 });
 
-export default MonthChartView;
+export default YearChartView;

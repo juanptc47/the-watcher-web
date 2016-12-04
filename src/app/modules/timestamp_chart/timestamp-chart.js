@@ -7,13 +7,13 @@ import Chart from 'chart.js';
 import Constants from 'app/services/constants';
 
 import extendRender from 'app/utils/extendRender';
-import template from './month-chart.html';
+import template from './timestamp-chart.html';
 
-const MonthChartView = View.extend({
+const TimestampChartView = View.extend({
   template: template,
   initialize() {
     extendRender(this);
-    this.model = new MonthChartModel();
+    this.model = new TimestampChartModel();
   },
   viewWillRender() {
   },
@@ -32,7 +32,7 @@ const MonthChartView = View.extend({
         }
       });
     } else {
-      console.log('MonthChartModel not ready');
+      console.log('TimestampChartModel not ready');
     }
 
   },
@@ -40,13 +40,11 @@ const MonthChartView = View.extend({
   }
 });
 
-// Model properties must be defined beforehand, not like in Backbone that can be defined on the fly.
-const MonthChartModel = Model.extend({
-  url: Constants.domain+'/statistics/month/',
+const TimestampChartModel = Model.extend({
+  url: Constants.domain+'/statistics/last/raw/',
   props: {
     id: 'string',
     statisticsType: 'string',
-    numOfDays: 'number',
     chartTitle: 'string',
     yLabel: 'string',
     lineColorPrimary: 'string',
@@ -58,23 +56,29 @@ const MonthChartModel = Model.extend({
   parse(response){
 
     let valuesArray = [];
+    let timestampLabels = [];
 
-    response.forEach( (object) => {
-      let day = new Date(object.timestamp).getDate();
-      valuesArray[day-1] = object[this.get('statisticsType')];
+    response.forEach( (object,index) => {
+      let date = new Date(object.time);
+      let day = date.getDate();
+      let month = date.getMonth()+1;
+      let year = date.getFullYear();
+      let hour = date.getHours();
+      let minute = date.getMinutes().toString();
+      if(minute.length<2){
+        minute = '0'+minute;
+      }
+
+      let timestamp = (day)+'/'+(month)+'/'+(year)+' - '+(hour)+':'+(minute);
+      valuesArray[index] = object.value;
+      timestampLabels.push(timestamp);
     });
-
-    const numOfDays = this.get('numOfDays');
-    let dayLabels = new Array(numOfDays);
-    for(let i=0; i<numOfDays; i++){
-      dayLabels[i] = (i+1).toString();
-    }
 
     this.set('data',valuesArray);
 
     let _this = this;
     var data = {
-      labels: dayLabels,
+      labels: timestampLabels,
       datasets: [
         {
           label: _this.get('chartTitle'),
@@ -105,16 +109,13 @@ const MonthChartModel = Model.extend({
 
     this.set('chartData',data);
     this.set('isReady',true);
+
+    //console.log(this.toJSON());
   },
   setMultiData(dataArray){
 
-    const numOfDays = this.get('numOfDays');
-    let dayLabels = new Array(numOfDays);
-    for(let i=0; i<numOfDays; i++){
-      dayLabels[i] = (i+1).toString();
-    }
-
-    var datasetsArray = [];
+    let datasetsArray = [];
+    let timestampLabels = [];
 
     dataArray.forEach( (object) => {
       let dataset = {
@@ -140,17 +141,17 @@ const MonthChartModel = Model.extend({
         spanGaps: false,
       };
       datasetsArray.push(dataset);
+      timestampLabels.push(object.timeStampLabel);
     });
 
     var data = {
-      labels: dayLabels,
+      labels: timestampLabels,
       datasets: datasetsArray
     };
 
     this.set('chartData',data);
     this.set('isReady',true);
   }
-
 });
 
-export default MonthChartView;
+export default TimestampChartView;

@@ -1,0 +1,16 @@
+<div id="variablesSelector">
+  <div id="variablesCarousel" class="carousel">
+    <% collection.each(function(model){ %>
+      <a class="carousel-item" id="<%= model.get('_id')%>" data-name="<%= model.get('nombre')%>" data-zone="<%= model.get('lugar')%>" data-unit="<%= model.get('unidad')%>">
+        <div class="carousel-my-card">
+          <div class="background-image" style="background-image: url('assets/img/ibero_<%= model.get('lugar')%>.jpg');"></div>
+          <div class="screen"></div>
+          <div class="var-logo">
+            <img src="/assets/img/<%= model.get('_id')%>.png"/>
+          </div>
+          <h1>-<%= model.get('nombre')%>-<br><%= model.get('lugar')%></h1>
+        </div>
+      </a>
+    <% }); %>
+  </div>
+</div>

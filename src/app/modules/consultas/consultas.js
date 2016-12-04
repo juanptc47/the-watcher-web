@@ -4,17 +4,23 @@ import AmpersandRestCollection from 'ampersand-rest-collection';
 import $ from 'jquery';
 
 // Services
-import TWAPIHelper from 'app/services/TWAPIHelper';
 import Constants from 'app/services/constants';
 
+// Subviews
+import TimestampChartView from 'app/modules/timestamp_chart/timestamp-chart';
 import DayChartView from 'app/modules/day_chart/day-chart';
 import MonthChartView from 'app/modules/month_chart/month-chart';
+import YearChartView from 'app/modules/year_chart/year-chart';
+import VariableSelectorView from 'app/modules/variables_selector/variables-selector';
 
 import extendRender from 'app/utils/extendRender';
 import template from './consultas.html';
 
 const ConsultasView = View.extend({
+
   template: template,
+  variableSelectorView: new VariableSelectorView(),
+
   selectedVarID: '',
   selectedVarName: '',
   selectedVarZone: '',
@@ -25,12 +31,13 @@ const ConsultasView = View.extend({
   yearCheckBoxIsChecked: true,
   initialize() {
     extendRender(this);
-    this.collection = new Variables();
-    this.listenTo(this.collection, 'sync', this.render);
 
-    this.collection.fetch();
+    this.listenTo(this.variableSelectorView.collection, 'sync', this.renderVariableSelectorView);
+
+    //this.collection.fetch();
   },
   events: {
+    "submit #variablesSearchForm" : "filterVariables",
     "click #searchNowBtn" : "searchBtnClicked",
     "change #todayCheckBox" : "todayCheckBoxClicked",
     "change #dayCheckBox" : "dayCheckBoxClicked",
@@ -38,22 +45,28 @@ const ConsultasView = View.extend({
     "change #yearCheckBox" : "yearCheckBoxClicked",
   },
   viewWillRender() {
+    this.variableSelectorView.collection.fetch();
   },
   viewDidRender() {
-
-    $('.carousel').carousel({
-      time_constant: 100
-    });
 
     $('ul.tabs').tabs();
 
     $('select').material_select();
+
+    $('.modal').modal();
 
     // UI Setup for searchType 1
     this.searchType = 1;
 
   },
   viewWillDisappear() {
+  },
+  renderVariableSelectorView(){
+    $('#variablesCarouselContainer').empty();
+    this.renderSubview(this.variableSelectorView,'#variablesCarouselContainer');
+  },
+  filterVariables(){
+    let textFilter = $('#searchBar').val();
   },
   searchBtnClicked() {
 
@@ -62,8 +75,7 @@ const ConsultasView = View.extend({
     /* Validate Params */
 
     if(this.todayCheckBoxIsChecked){
-      console.log("Search Today");
-      //TWAPIHelper.getDataFromToday();
+      this.searchForToday(this.selectedVarID,this.selectedVarName,this.selectedVarZone,this.selectedVarUnit);
       return;
     }
 
@@ -103,8 +115,8 @@ const ConsultasView = View.extend({
         Materialize.toast('Revisa que hayas elegido un valor para año', 10000, 'rounded');
         return;
       }
-      console.log("Search Year: "+yearValue);
-      TWAPIHelper.getDataFromYear(0,yearValue);
+
+      this.searchForYear(this.selectedVarID,this.selectedVarName,this.selectedVarZone,this.selectedVarUnit,yearValue);
 
     } else {
       Materialize.toast('¡Parametros de busqueda incorrectos!', 10000, 'rounded');
@@ -163,13 +175,14 @@ const ConsultasView = View.extend({
     let checkBoxIsChecked = $('#monthCheckBox').prop('checked');
 
     this.monthCheckBoxIsChecked = checkBoxIsChecked;
-    this.dayCheckBoxIsChecked = checkBoxIsChecked;
+    //this.dayCheckBoxIsChecked = checkBoxIsChecked;
 
     if(checkBoxIsChecked){
-      $('#daySelectInput').prop('disabled',false);
-      $('#dayCheckBox').prop('checked',true);
+      //$('#daySelectInput').prop('disabled',false);
+      //$('#dayCheckBox').prop('checked',true);
       $('#monthSelectInput').prop('disabled',false);
     } else {
+      this.dayCheckBoxIsChecked = checkBoxIsChecked;
       $('#daySelectInput').prop('disabled',true);
       $('#dayCheckBox').prop('checked',false);
       $('#monthSelectInput').prop('disabled',true);
@@ -183,14 +196,48 @@ const ConsultasView = View.extend({
     let checkBoxIsChecked = $('#dayCheckBox').prop('checked');
 
     this.dayCheckBoxIsChecked = checkBoxIsChecked;
+    //this.monthCheckBoxIsChecked = checkBoxIsChecked;
 
     if(checkBoxIsChecked){
+      this.monthCheckBoxIsChecked = checkBoxIsChecked;
+      $('#monthCheckBox').prop('checked',true);
       $('#daySelectInput').prop('disabled',false);
+      $('#monthSelectInput').prop('disabled',false);
     } else {
       $('#daySelectInput').prop('disabled',true);
     }
     $('#daySelectInput').material_select('update');
+    $('#monthSelectInput').material_select('update');
 
+  },
+  searchForToday(varID,varName,varZone,varUnit) {
+    $('.chart-container').empty();
+    $('.serach-results').slideDown('fast');
+    $('#loadingIndicator').fadeIn('fast', () => {
+      $('html, body').animate({
+          scrollTop: $(".results-divider").offset().top-50
+      },200);
+    });
+
+    let chartView = new TimestampChartView();
+    chartView.model.set('id',varID+'-chart');
+    chartView.model.set('chartTitle',varName+' - '+varZone+' (Recientes)');
+    chartView.model.set('lineColorPrimary','#3F51B5');
+    chartView.model.set('lineColorAccent','#2196F3');
+    chartView.model.set('yLabel', varUnit);
+    chartView.model.url += varID;
+
+    chartView.model.fetch({
+      success: (model, response, options) => {
+        $('#loadingIndicator').slideUp('fast', _ =>{
+          this.showChart(chartView,'chart1-container');
+        });
+      },
+      error: function(model, response, options){
+        console.log('ERROR!');
+        console.log(response);
+      }
+    });
   },
   searchForDay(varID,varName,varZone,varUnit,yearValue,monthValue,dayValue){
 
@@ -229,9 +276,14 @@ const ConsultasView = View.extend({
     modeChartView.model.set('yLabel', varUnit);
     modeChartView.model.url += varID+'?year='+yearValue+'&month='+monthValue+'&day='+dayValue+'&type=mode';
 
+
+    let meanChartPromise = $.Deferred();
+    let medianChartPromise = $.Deferred();
+    let modeChartPromise = $.Deferred();
+
     meanChartView.model.fetch({
       success: (model, response, options) => {
-        this.showChart(meanChartView,'chart1-container');
+        meanChartPromise.resolve();
       },
       error: function(model, response, options){
         console.log('ERROR!');
@@ -239,9 +291,9 @@ const ConsultasView = View.extend({
       }
     });
 
-    modeChartView.model.fetch({
+    medianChartView.model.fetch({
       success: (model, response, options) => {
-        this.showChart(modeChartView,'chart3-container');
+        medianChartPromise.resolve();
       },
       error: (model, response, options) => {
         console.log('ERROR!');
@@ -249,14 +301,50 @@ const ConsultasView = View.extend({
       }
     });
 
-    medianChartView.model.fetch({
+    modeChartView.model.fetch({
       success: (model, response, options) => {
-        this.showChart(medianChartView,'chart2-container');
+        modeChartPromise.resolve();
       },
       error: (model, response, options) => {
         console.log('ERROR!');
         console.log(response);
       }
+    });
+
+    Promise.all([meanChartPromise, medianChartPromise, modeChartPromise]).then( _ => {
+
+      $('#loadingIndicator').slideUp('fast', _ =>{
+
+        this.showChart(meanChartView,'chart1-container');
+        this.showChart(medianChartView,'chart2-container');
+        this.showChart(modeChartView,'chart3-container');
+
+        let meanData = {
+          title: 'Promedio',
+          color: '#3F51B5',
+          data: meanChartView.model.get('data')
+        };
+
+        let medianData = {
+          title: 'Mediana',
+          color: '#4CAF50',
+          data: medianChartView.model.get('data')
+        };
+
+        let modeData = {
+          title: 'Moda',
+          color: '#673AB7',
+          data: modeChartView.model.get('data')
+        };
+
+        let multiChartView = new DayChartView();
+        multiChartView.model.set('id',varID+'-chart-multi');
+        multiChartView.model.set('yLabel', varUnit);
+        multiChartView.model.setMultiData([meanData,medianData,modeData]);
+        this.showChart(multiChartView,'chart4-container');
+
+        });
+
     });
 
   },
@@ -302,9 +390,13 @@ const ConsultasView = View.extend({
     modeChartView.model.set('numOfDays', numOfDays);
     modeChartView.model.url += varID+'?year='+yearValue+'&month='+monthValue+'&type=mode';
 
+    let meanChartPromise = $.Deferred();
+    let medianChartPromise = $.Deferred();
+    let modeChartPromise = $.Deferred();
+
     meanChartView.model.fetch({
       success: (model, response, options) => {
-        this.showChart(meanChartView,'chart1-container');
+        meanChartPromise.resolve();
       },
       error: function(model, response, options){
         console.log('ERROR!');
@@ -314,7 +406,7 @@ const ConsultasView = View.extend({
 
     modeChartView.model.fetch({
       success: (model, response, options) => {
-        this.showChart(modeChartView,'chart3-container');
+        medianChartPromise.resolve();
       },
       error: (model, response, options) => {
         console.log('ERROR!');
@@ -324,34 +416,162 @@ const ConsultasView = View.extend({
 
     medianChartView.model.fetch({
       success: (model, response, options) => {
-        this.showChart(medianChartView,'chart2-container');
+        modeChartPromise.resolve();
       },
       error: (model, response, options) => {
         console.log('ERROR!');
         console.log(response);
       }
     });
+
+    Promise.all([meanChartPromise, medianChartPromise, modeChartPromise]).then( _ => {
+
+      $('#loadingIndicator').slideUp('fast', _ =>{
+
+        this.showChart(meanChartView,'chart1-container');
+        this.showChart(medianChartView,'chart2-container');
+        this.showChart(modeChartView,'chart3-container');
+
+        let meanData = {
+          title: 'Promedio',
+          color: '#3F51B5',
+          data: meanChartView.model.get('data')
+        };
+
+        let medianData = {
+          title: 'Mediana',
+          color: '#4CAF50',
+          data: medianChartView.model.get('data')
+        };
+
+        let modeData = {
+          title: 'Moda',
+          color: '#673AB7',
+          data: modeChartView.model.get('data')
+        };
+
+        let multiChartView = new MonthChartView();
+        multiChartView.model.set('id',varID+'-chart-multi');
+        multiChartView.model.set('yLabel', varUnit);
+        multiChartView.model.set('numOfDays', numOfDays);
+        multiChartView.model.setMultiData([meanData,medianData,modeData]);
+        this.showChart(multiChartView,'chart4-container');
+
+      });
+    });
+
+  },
+  searchForYear(varID,varName,varZone,varUnit,yearValue){
+
+    $('.chart-container').empty();
+    $('.serach-results').slideDown('fast');
+    $('#loadingIndicator').fadeIn('fast', () => {
+      $('html, body').animate({
+          scrollTop: $(".results-divider").offset().top-50
+      },200);
+    });
+
+    let meanChartView = new YearChartView();
+    meanChartView.model.set('id',varID+'-chart-mean');
+    meanChartView.model.set('statisticsType', 'mean');
+    meanChartView.model.set('chartTitle',varName+' - '+varZone+' (Promedio)');
+    meanChartView.model.set('lineColorPrimary','#3F51B5');
+    meanChartView.model.set('lineColorAccent','#2196F3');
+    meanChartView.model.set('yLabel', varUnit);
+    meanChartView.model.url += varID+'?year='+yearValue+'&type=mean';
+
+    let medianChartView = new YearChartView();
+    medianChartView.model.set('id',varID+'-chart-median');
+    medianChartView.model.set('statisticsType', 'median');
+    medianChartView.model.set('chartTitle',varName+' - '+varZone+' (Mediana)');
+    medianChartView.model.set('lineColorPrimary','#4CAF50');
+    medianChartView.model.set('lineColorAccent','#8BC3A4');
+    medianChartView.model.set('yLabel', varUnit);
+    medianChartView.model.url += varID+'?year='+yearValue+'&type=median';
+
+    let modeChartView = new YearChartView();
+    modeChartView.model.set('id',varID+'-chart-mode');
+    modeChartView.model.set('statisticsType', 'mode');
+    modeChartView.model.set('chartTitle',varName+' - '+varZone+' (Moda)');
+    modeChartView.model.set('lineColorPrimary','#673AB7');
+    modeChartView.model.set('lineColorAccent','#9C27B0');
+    modeChartView.model.set('yLabel', varUnit);
+    modeChartView.model.url += varID+'?year='+yearValue+'&type=mode';
+
+    let meanChartPromise = $.Deferred();
+    let medianChartPromise = $.Deferred();
+    let modeChartPromise = $.Deferred();
+
+    meanChartView.model.fetch({
+      success: (model, response, options) => {
+        meanChartPromise.resolve();
+      },
+      error: function(model, response, options){
+        console.log('ERROR!');
+        console.log(response);
+      }
+    });
+
+    medianChartView.model.fetch({
+      success: (model, response, options) => {
+        medianChartPromise.resolve();
+      },
+      error: (model, response, options) => {
+        console.log('ERROR!');
+        console.log(response);
+      }
+    });
+
+    modeChartView.model.fetch({
+      success: (model, response, options) => {
+        modeChartPromise.resolve();
+      },
+      error: (model, response, options) => {
+        console.log('ERROR!');
+        console.log(response);
+      }
+    });
+
+    Promise.all([meanChartPromise, medianChartPromise, modeChartPromise]).then( _ => {
+
+      $('#loadingIndicator').slideUp('fast', _ =>{
+
+        this.showChart(meanChartView,'chart1-container');
+        this.showChart(medianChartView,'chart2-container');
+        this.showChart(modeChartView,'chart3-container');
+
+        let meanData = {
+          title: 'Promedio',
+          color: '#3F51B5',
+          data: meanChartView.model.get('data')
+        };
+
+        let medianData = {
+          title: 'Mediana',
+          color: '#4CAF50',
+          data: medianChartView.model.get('data')
+        };
+
+        let modeData = {
+          title: 'Moda',
+          color: '#673AB7',
+          data: modeChartView.model.get('data')
+        };
+
+        let multiChartView = new YearChartView();
+        multiChartView.model.set('id',varID+'-chart-multi');
+        multiChartView.model.set('yLabel', varUnit);
+        multiChartView.model.setMultiData([meanData,medianData,modeData]);
+        this.showChart(multiChartView,'chart4-container');
+
+        });
+
+    });
+
   },
   showChart(chartView,elementID){
-    $('#loadingIndicator').slideUp('fast');
     this.renderSubview(chartView,'#'+elementID);
   }
-});
-
-const Variable = AmpersandState.extend({
-  props: {
-    _id: "string",
-    nombre: "string",
-    lugar: "string",
-    unidad: "string",
-    descripcion: "string",
-    foto_url: "string"
-  }
-});
-
-const Variables = AmpersandRestCollection.extend({
-  url: Constants.domain+'/variables',
-  model: Variable,
 });
 
 export default ConsultasView;

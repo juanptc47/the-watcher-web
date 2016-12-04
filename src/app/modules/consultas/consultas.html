@@ -3,24 +3,24 @@
   <h1 class="title">Consultas</h1>
 
   <div class="card">
-    <h5><i class="material-icons">network_check</i> Variables Medidas</h5>
+    <div class="row">
+      <div class="col s12 m6"><h5><i class="material-icons">network_check</i> Variables Medidas</h5></div>
+      <div class="col s12 m6">
+        <form id="variablesSearchForm">
+
+          <div class="input-field-custom input-field inline">
+            <input id="searchBar" class="validate">
+            <label for="searchBar"><i class="material-icons">search</i></label>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
     <div class="card-content">
-      <div class="container">
-        <div id="variablesCarousel" class="carousel">
-
-          <% collection.each(function(model){ %>
-            <a class="carousel-item" id="<%= model.get('_id')%>" data-name="<%= model.get('nombre')%>" data-zone="<%= model.get('lugar')%>" data-unit="<%= model.get('unidad')%>">
-              <div class="carousel-my-card">
-                <div class="background-image" style="background-image: url('assets/img/ibero_<%= model.get('lugar')%>.jpg');"></div>
-                <div class="screen"></div>
-                <div class="var-logo">
-                  <img src="/assets/img/<%= model.get('nombre')%>.png"/>
-                </div>
-                <h1>-<%= model.get('nombre')%>-<br><%= model.get('lugar')%></h1>
-              </div>
-            </a>
-          <% }); %>
-
+      <div class="container" id="variablesCarouselContainer">
+        <div class="progress red lighten-4">
+            <div class="indeterminate red"></div>
         </div>
       </div>
     </div>
@@ -40,15 +40,13 @@
           </ul>
         </div>
         <div id="searchType1" class="my-tab-content col s12">
+
           <br>
-          <p class="description">
-            Define una fecha especifica para visualizar información de la variable seleccionada.<br>
-            Puedes elegir buscar por año, mes o día:<br>
-            &emsp; • Un día te mostrara los datos tomados por hora.<br>
-            &emsp; • Un mes te mostrara el promedio de los datos por día.<br>
-            &emsp; • Un año te mostrara el promedio de los datos por mes.<br>
-            &emsp; • Si pides los datos de hoy, recibiras toda información recaudada en el día.<br>
-          </p>
+          <br>
+          <p align="center"> <a class="modal-trigger btn-floating btn-small waves-effect waves-light red" href="#modalInfoSearch1"><i class="material-icons">info</i></a> Como buscar </p>
+          <br>
+          <br>
+
           <div class="row">
             <div class="col s6 m3">
               <p>
@@ -71,7 +69,7 @@
             <div class="col s6 m3">
               <p>
                 <input type="checkbox" class="filled-in checkbox-red" id="todayCheckBox" />
-                <label for="todayCheckBox">Hoy</label>
+                <label for="todayCheckBox">Ahorita</label>
               </p>
             </div>
           </div>
@@ -141,8 +139,12 @@
             </div>
           </div>
         </div>
-        <div id="searchType2" class="my-tab-content col s12">Test 2</div>
-        <div id="searchType3" class="my-tab-content col s12">Test 3</div>
+        <div id="searchType2" class="my-tab-content col s12">
+          <img class="responsive-img" src="/assets/img/comming_soon_red.gif"/>
+        </div>
+        <div id="searchType3" class="my-tab-content col s12">
+          <img class="responsive-img" src="/assets/img/comming_soon_red.gif"/>
+        </div>
       </div>
 
 
@@ -183,6 +185,23 @@
       <div class="col s12">
           <div id="chart4-container" class="chart-container"></div>
       </div>
+    </div>
+  </div>
+
+  <div id="modalInfoSearch1" class="modal bottom-sheet">
+    <div class="modal-content my-info-modal">
+      <h4>Busqueda por fecha especifica</h4>
+      <p class="description">
+        Define una fecha especifica para visualizar información de la variable seleccionada.<br><br>
+        Puedes elegir buscar por año, mes, día o datos recientes al instatne de buscar:<br>
+        &emsp; • Un día te mostrara los datos estadísticos tomados por hora.<br>
+        &emsp; • Un mes te mostrara los datos estadísticos tomados por día.<br>
+        &emsp; • Un año te mostrara los datos estadísticos tomados por mes.<br>
+        &emsp; • Si pides los datos de Ahorita, recibiras las últimas 45 tomas de inforación de la variable seleccionada.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <a class=" modal-action modal-close waves-effect red btn">OK</a>
     </div>
   </div>
 
